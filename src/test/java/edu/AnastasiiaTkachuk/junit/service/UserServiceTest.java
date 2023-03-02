@@ -49,6 +49,15 @@ public class UserServiceTest {
         assertThat(maybeUser).isPresent();
         maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
     }
+    @Test
+    void throwExceptionIfUsernameOrPasswordIsNull(){
+        assertAll(
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> userService.login(null, "1234")),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> userService.login("Ivan", null))
+        );
+    }
 
     @Test
     void usersConvertedToMapById(){
