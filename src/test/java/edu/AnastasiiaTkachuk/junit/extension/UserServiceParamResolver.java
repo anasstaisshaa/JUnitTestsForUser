@@ -1,7 +1,6 @@
-package edu.AnastasiiaTkachuk.junit.paramresolver;
+package edu.AnastasiiaTkachuk.junit.extension;
 
 import edu.AnastasiiaTkachuk.junit.service.UserService;
-import edu.AnastasiiaTkachuk.junit.service.UserServiceTest;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;

@@ -1,7 +1,7 @@
 package edu.AnastasiiaTkachuk.junit.service;
 
 import edu.AnastasiiaTkachuk.junit.dto.User;
-import edu.AnastasiiaTkachuk.junit.paramresolver.UserServiceParamResolver;
+import edu.AnastasiiaTkachuk.junit.extension.GlobalExtension;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.*;
 @Tag("fast")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith({
-        UserServiceParamResolver.class
+        GlobalExtension.class,
 })
 public class UserServiceTest {
     private UserService userService;
@@ -34,9 +34,9 @@ public class UserServiceTest {
     }
 
     @BeforeEach
-    void prepare(UserService userService){
+    void prepare(){
         System.out.println("Before each: " + this);
-        this.userService = userService;
+        userService = new UserService();
     }
 
     @Test
