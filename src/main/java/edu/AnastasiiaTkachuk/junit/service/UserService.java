@@ -1,10 +1,9 @@
 package edu.AnastasiiaTkachuk.junit.service;
 
+import edu.AnastasiiaTkachuk.junit.dao.UserDao;
 import edu.AnastasiiaTkachuk.junit.dto.User;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.function.Function.*;
 import static java.util.stream.Collectors.*;
@@ -12,6 +11,15 @@ import static java.util.stream.Collectors.*;
 public class UserService {
 
     private final List<User> users = new ArrayList<>();
+    private final UserDao userDao;
+
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
+    }
+    public boolean delete(Integer userId){
+        return userDao.delete(userId);
+    }
+
     public List<User> getAll() {
         return users;
     }
