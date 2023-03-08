@@ -39,7 +39,8 @@ public class UserServiceTest {
     @BeforeEach
     void prepare(){
         System.out.println("Before each: " + this);
-        this.userDao = Mockito.mock(UserDao.class);
+//        this.userDao = Mockito.mock(UserDao.class);
+        this.userDao = Mockito.spy(new UserDao());
         this.userService = new UserService(userDao);
     }
     @Test
@@ -49,6 +50,7 @@ public class UserServiceTest {
    //     Mockito.doReturn(true).when(userDao).delete(Mockito.any());
    //     Mockito.when(userDao.delete(IVAN.getId())).thenReturn(true);
         boolean deleteResult = userService.delete(IVAN.getId());
+        Mockito.verify(userDao, Mockito.times(1)).delete(IVAN.getId());
         assertThat(deleteResult).isTrue();
     }
 
