@@ -7,7 +7,10 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
@@ -16,52 +19,63 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @Tag("fast")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith({
         GlobalExtension.class,
+        MockitoExtension.class
 })
 public class UserServiceTest {
+    @InjectMocks
     private UserService userService;
+    @Mock
     private UserDao userDao;
     private static final User IVAN = User.of(1, "Ivan", "123");
     private static final User PETR = User.of(2, "Petr", "111");
 
-    UserServiceTest(TestInfo testInfo){
+    UserServiceTest(TestInfo testInfo) {
         System.out.println();
     }
+
     @BeforeAll
-    void init(){
+    void init() {
         System.out.println("Before all: " + this);
     }
 
     @BeforeEach
-    void prepare(){
+    void prepare() {
         System.out.println("Before each: " + this);
 //        this.userDao = Mockito.mock(UserDao.class);
-        this.userDao = Mockito.spy(new UserDao());
-        this.userService = new UserService(userDao);
-    }
-    @Test
-    void shouldDeleteExistedUser(){
-        userService.add(IVAN);
-        Mockito.doReturn(true).when(userDao).delete(IVAN.getId());
-   //     Mockito.doReturn(true).when(userDao).delete(Mockito.any());
-   //     Mockito.when(userDao.delete(IVAN.getId())).thenReturn(true);
-        boolean deleteResult = userService.delete(IVAN.getId());
-        Mockito.verify(userDao, Mockito.times(1)).delete(IVAN.getId());
-        assertThat(deleteResult).isTrue();
+//        this.userDao = Mockito.spy(new UserDao());
+//        this.userService = new UserService(userDao);
     }
 
     @Test
-    void usersEmptyIfNoUserAdded(){
+    void shouldDeleteExistedUser() {
+        userService.add(IVAN);
+        doReturn(true).when(userDao).delete(IVAN.getId());
+        //     Mockito.doReturn(true).when(userDao).delete(Mockito.any());
+        //     Mockito.when(userDao.delete(IVAN.getId())).thenReturn(true);
+        boolean deleteResult = userService.delete(IVAN.getId());
+        verify(userDao, times(1)).delete(IVAN.getId());
+        assertThat(deleteResult).isTrue();
+    }
+    @Test
+    void throwExceptionIfDatabaseIsNotAvailable(){
+        doThrow(RuntimeException.class).when(userDao).delete(IVAN.getId());
+        assertThrows(RuntimeException.class, () -> userService.delete(IVAN.getId()));
+    }
+    @Test
+    void usersEmptyIfNoUserAdded() {
         System.out.println("Test 1: " + this);
         List<User> users = userService.getAll();
         assertThat(users).isEmpty();
     }
+
     @Test
-    void usersSizeIfUserAdded(){
+    void usersSizeIfUserAdded() {
         System.out.println("Test 2: " + this);
         userService.add(IVAN, PETR);
 
@@ -70,7 +84,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void usersConvertedToMapById(){
+    void usersConvertedToMapById() {
         userService.add(IVAN, PETR);
         Map<Integer, User> users = userService.getAllConvertedById();
         assertAll(
@@ -94,12 +108,13 @@ public class UserServiceTest {
 //            "Ivan", "123",
 //            "Petr", "111"
 //    })
-    void loginParametrizedTest(String username, String password, Optional<User> user){
+    void loginParametrizedTest(String username, String password, Optional<User> user) {
         userService.add(IVAN, PETR);
         Optional<User> maybeUser = userService.login(username, password);
         assertThat(maybeUser).isEqualTo(user);
     }
-    static Stream<Arguments> getArgumentsForLoginTest(){
+
+    static Stream<Arguments> getArgumentsForLoginTest() {
         return Stream.of(
                 Arguments.of("Ivan", "123", Optional.of(IVAN)),
                 Arguments.of("Petr", "111", Optional.of(PETR)),
@@ -107,13 +122,14 @@ public class UserServiceTest {
                 Arguments.of("sdsf", "123", Optional.empty())
         );
     }
+
     @AfterEach
-    void deleteDataFromDatabase(){
+    void deleteDataFromDatabase() {
         System.out.println("After each: " + this);
     }
 
     @AfterAll
-    void closeConnectionPool(){
+    void closeConnectionPool() {
         System.out.println("After all: " + this);
     }
 
@@ -121,26 +137,29 @@ public class UserServiceTest {
     @Tag("login")
     class LoginTest {
         @Test
-        void loginFailIfPasswordIsNotCorrect(){
+        void loginFailIfPasswordIsNotCorrect() {
             userService.add(IVAN);
             Optional<User> maybeUser = userService.login(IVAN.getUsername(), "jdfjkfk");
             assertThat(maybeUser).isEmpty();
         }
+
         @Test
-        void loginFailIfUserDoesNotExist(){
+        void loginFailIfUserDoesNotExist() {
             userService.add(IVAN);
             Optional<User> maybeUser = userService.login("Anastasiia", IVAN.getPassword());
             assertThat(maybeUser).isEmpty();
         }
+
         @Test
-        void loginSuccessIfUserExists(){
+        void loginSuccessIfUserExists() {
             userService.add(IVAN);
             Optional<User> maybeUser = userService.login(IVAN.getUsername(), IVAN.getPassword());
             assertThat(maybeUser).isPresent();
             maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
         }
+
         @Test
-        void throwExceptionIfUsernameOrPasswordIsNull(){
+        void throwExceptionIfUsernameOrPasswordIsNull() {
             assertAll(
                     () -> assertThrows(IllegalArgumentException.class,
                             () -> userService.login(null, "1234")),
